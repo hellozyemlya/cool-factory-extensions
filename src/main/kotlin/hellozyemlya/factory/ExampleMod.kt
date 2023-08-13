@@ -142,11 +142,26 @@ class ConveyorBeltVerticalBlock(settings: Settings) : Block(settings) {
         return true
     }
 
-    override fun onEntityCollision(state: BlockState?, world: World?, pos: BlockPos?, entity: Entity?) {
-        if (entity != null && state != null) {
-            if (!entity.isCrawling) {
-                entity.velocity =
-                    entity.velocity.add(0.0, 0.06, 0.0)
+    override fun onEntityCollision(state: BlockState, world: World, pos: BlockPos, entity: Entity) {
+        if (!entity.isCrawling) {
+            val direction = when(state.get(OpenSideProperty)) {
+                OpenSide.EAST -> Direction.EAST
+                OpenSide.NORTH -> Direction.NORTH
+                OpenSide.SOUTH -> Direction.SOUTH
+                OpenSide.WEST -> Direction.WEST
+                else -> null
+            }
+
+            if(direction != null) {
+                val down1 = world.getBlockState(pos.down()).block
+                val down2 = world.getBlockState(pos.down().down()).block
+                if(down1 == ExampleMod.ConveyorBeltVerticalBlock && down2 != ExampleMod.ConveyorBeltVerticalBlock || down1 != ExampleMod.ConveyorBeltVerticalBlock ) {
+                    entity.velocity =  entity.velocity.add(0.06 * (direction.opposite.offsetX * 1.5), 0.06, 0.06 * (direction.opposite.offsetZ * 1.5))
+                } else {
+                    entity.velocity =  entity.velocity.add(0.06 * (direction.offsetX * 1.5), 0.06, 0.06 * (direction.offsetZ * 1.5))
+                }
+            } else {
+                entity.velocity = entity.velocity.add(0.0, 0.06, 0.0)
             }
         }
     }
@@ -214,7 +229,7 @@ class ConveyorBeltVerticalBlock(settings: Settings) : Block(settings) {
 object ExampleMod : ModInitializer {
     private val logger = LoggerFactory.getLogger("cool-factory-extensions")
     private val ConveyorBeltBlock = ConveyorBeltBlock(FabricBlockSettings.create().strength(4.0f).collidable(false))
-    private val ConveyorBeltVerticalBlock = ConveyorBeltVerticalBlock(FabricBlockSettings.create().strength(4.0f).collidable(false).nonOpaque())
+    public val ConveyorBeltVerticalBlock = ConveyorBeltVerticalBlock(FabricBlockSettings.create().strength(4.0f).collidable(false).nonOpaque())
 
     override fun onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
