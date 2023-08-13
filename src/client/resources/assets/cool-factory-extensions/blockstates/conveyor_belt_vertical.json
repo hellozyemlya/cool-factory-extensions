@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "open_side=none": {
+      "model": "cool-factory-extensions:block/conveyor_belt_vertical"
+    },
+    "open_side=north": {
+      "model": "cool-factory-extensions:block/conveyor_belt_vertical_open"
+    },
+    "open_side=east": {
+      "model": "cool-factory-extensions:block/conveyor_belt_vertical_open",
+      "y": 90
+    },
+    "open_side=south": {
+      "model": "cool-factory-extensions:block/conveyor_belt_vertical_open",
+      "y": 180
+    },
+    "open_side=west": {
+      "model": "cool-factory-extensions:block/conveyor_belt_vertical_open",
+      "y": 270
+    }
+  }
+}

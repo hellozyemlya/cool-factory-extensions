@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "cool-factory-extensions:block/conveyor_belt"
+    },
+    "facing=east": {
+      "model": "cool-factory-extensions:block/conveyor_belt",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "cool-factory-extensions:block/conveyor_belt",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "cool-factory-extensions:block/conveyor_belt",
+      "y": 270
+    }
+  }
+}

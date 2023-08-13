@@ -1,0 +1,23 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "cool-factory-extensions:block/conveyor_belt",
+		"1": "cool-factory-extensions:block/conveyor_belt_animation",
+		"particle": "cool-factory-extensions:block/conveyor_belt"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 1, 16],
+			"faces": {
+				"north": {"uv": [8, 1, 16, 1.5], "texture": "#0"},
+				"east": {"uv": [8, 1.5, 16, 2], "texture": "#0"},
+				"south": {"uv": [8, 0, 16, 0.5], "texture": "#0"},
+				"west": {"uv": [8, 0.5, 16, 1], "texture": "#0"},
+				"up": {"uv": [16, 16, 0, 0], "rotation": 180, "texture": "#1"},
+				"down": {"uv": [8, 8, 0, 16], "rotation": 180, "texture": "#0"}
+			}
+		}
+	]
+}
