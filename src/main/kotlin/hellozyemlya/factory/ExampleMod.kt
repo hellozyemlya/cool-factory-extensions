@@ -132,7 +132,7 @@ enum class OpenSide : StringIdentifiable {
         }
     }
 }
-val OpenSideProperty = EnumProperty.of("open_side", OpenSide::class.java)
+val OpenSideProperty: EnumProperty<OpenSide> = EnumProperty.of("open_side", OpenSide::class.java)
 
 class ConveyorBeltVerticalBlock(settings: Settings) : Block(settings) {
     init {
@@ -152,17 +152,23 @@ class ConveyorBeltVerticalBlock(settings: Settings) : Block(settings) {
                 else -> null
             }
 
+            val yVelocityToAdd = if(entity.velocity.y < 0.3) {
+                0.3 - entity.velocity.y
+            } else {
+                0.0
+            }
             if(direction != null) {
                 val down1 = world.getBlockState(pos.down()).block
                 val down2 = world.getBlockState(pos.down().down()).block
                 if(down1 == ExampleMod.ConveyorBeltVerticalBlock && down2 != ExampleMod.ConveyorBeltVerticalBlock || down1 != ExampleMod.ConveyorBeltVerticalBlock ) {
-                    entity.velocity =  entity.velocity.add(0.06 * (direction.opposite.offsetX * 1.5), 0.06, 0.06 * (direction.opposite.offsetZ * 1.5))
+                    entity.velocity =  entity.velocity.add(0.06 * (direction.opposite.offsetX * 1.5), yVelocityToAdd, 0.06 * (direction.opposite.offsetZ * 1.5))
                 } else {
-                    entity.velocity =  entity.velocity.add(0.06 * (direction.offsetX * 1.5), 0.06, 0.06 * (direction.offsetZ * 1.5))
+                    entity.velocity =  entity.velocity.add(0.06 * (direction.offsetX * 1.5), yVelocityToAdd, 0.06 * (direction.offsetZ * 1.5))
                 }
             } else {
-                entity.velocity = entity.velocity.add(0.0, 0.06, 0.0)
+                entity.velocity = entity.velocity.add(0.0, yVelocityToAdd, 0.0)
             }
+            println(entity.velocity.y)
         }
     }
 
