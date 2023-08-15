@@ -109,40 +109,23 @@ class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: Ve
 
     override fun onEntityCollision(state: BlockState, world: World, pos: BlockPos, entity: Entity) {
         if (!entity.isSneaking) {
-            val direction = state.get(OpenSideProperty).toDirection()
-
             val yVelocityDiff = calcVerticalVelocityDiff(entity)
 
-            if (direction != null) {
-                when (verticalType) {
-                    VerticalBlockType.VERTICAL_INPUT -> {
-                        entity.velocity = entity.velocity.add(
-                            0.06 * (direction.opposite.offsetX * 1.5),
-                            yVelocityDiff,
-                            0.06 * (direction.opposite.offsetZ * 1.5)
-                        )
-                    }
-
-                    VerticalBlockType.VERTICAL_OUTPUT -> {
-                        entity.velocity = entity.velocity.add(
-                            0.06 * (direction.offsetX * 1.5),
-                            yVelocityDiff,
-                            0.06 * (direction.offsetZ * 1.5)
-                        )
-                    }
-
-                    VerticalBlockType.VERTICAL -> {
-                        entity.velocity = entity.velocity.add(
-                            0.0,
-                            yVelocityDiff,
-                            0.0
-                        )
-                    }
+            if (verticalType != VerticalBlockType.VERTICAL) {
+                val direction = if(verticalType == VerticalBlockType.VERTICAL_INPUT) {
+                    state.get(OpenSideProperty).toDirection()!!.opposite
+                } else {
+                    state.get(OpenSideProperty).toDirection()!!
                 }
+
+                entity.velocity = entity.velocity.add(
+                    0.06 * (direction.offsetX * 1.5),
+                    yVelocityDiff,
+                    0.06 * (direction.offsetZ * 1.5)
+                )
             } else {
                 entity.velocity = entity.velocity.add(0.0, yVelocityDiff, 0.0)
             }
-            println(entity.velocity.y)
         }
     }
 
@@ -152,6 +135,7 @@ class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: Ve
         pos: BlockPos?,
         context: ShapeContext?
     ): VoxelShape {
+        // TODO rotate and fix outline shape
         val bot = createCuboidShape(0.0, 0.0, 0.0, 16.0, 1.0, 16.0)
         val top = createCuboidShape(0.0, 15.0, 0.0, 16.0, 16.0, 16.0)
         val left = createCuboidShape(0.0, 1.0, 0.0, 1.0, 16.0, 15.0)
