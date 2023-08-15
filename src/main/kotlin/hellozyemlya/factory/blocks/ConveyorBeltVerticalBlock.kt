@@ -20,49 +20,41 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.World
 
 enum class OpenSide : StringIdentifiable {
-    SOUTH {
-        override fun asString(): String {
-            return "south"
+    SOUTH,
+    WEST,
+    EAST,
+    NORTH,
+    NONE;
+
+    override fun asString(): String {
+        return this.name.lowercase()
+    }
+
+    public fun opposite(): OpenSide {
+        return when (this) {
+            EAST -> WEST
+            WEST -> EAST
+            NORTH -> SOUTH
+            SOUTH -> NORTH
+            NONE -> NONE
         }
-    },
-    WEST {
-        override fun asString(): String {
-            return "west"
-        }
-    },
-    EAST {
-        override fun asString(): String {
-            return "east"
-        }
-    },
-    NORTH {
-        override fun asString(): String {
-            return "north"
-        }
-    },
-    NONE {
-        override fun asString(): String {
-            return "none"
+    }
+
+    public fun rotateClockwise(): OpenSide {
+        return when (this) {
+            EAST -> SOUTH
+            SOUTH -> WEST
+            WEST -> NORTH
+            NORTH -> EAST
+            NONE -> NONE
         }
     }
 }
 
-enum class VerticalBlockType : StringIdentifiable {
-    VERTICAL_INPUT {
-        override fun asString(): String {
-            return "input"
-        }
-    },
-    VERTICAL_OUTPUT {
-        override fun asString(): String {
-            return "output"
-        }
-    },
-    VERTICAL {
-        override fun asString(): String {
-            return "none"
-        }
-    }
+enum class VerticalBlockType {
+    VERTICAL_INPUT,
+    VERTICAL_OUTPUT,
+    VERTICAL
 }
 
 fun OpenSide.toDirection(): Direction? {
@@ -85,11 +77,40 @@ fun Direction.toOpenSide(): OpenSide? {
     }
 }
 
-val OpenSideProperty: EnumProperty<OpenSide> = EnumProperty.of("open_side", OpenSide::class.java)
-
-const val VerticalSpeed = 0.3
 
 class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: VerticalBlockType) : Block(settings) {
+    companion object {
+        val OpenSideProperty: EnumProperty<OpenSide> = EnumProperty.of("open_side", OpenSide::class.java)
+
+        const val VerticalSpeed = 0.3
+        private val EAST_SHAPE: VoxelShape = VoxelShapes.union(
+            createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 1.0),
+            createCuboidShape(0.0, 0.0, 15.0, 16.0, 16.0, 16.0),
+            createCuboidShape(0.0, 0.0, 1.0, 1.0, 16.0, 15.0)
+        ).simplify()
+        private val WEST_SHAPE: VoxelShape = VoxelShapes.union(
+            createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 1.0),
+            createCuboidShape(0.0, 0.0, 15.0, 16.0, 16.0, 16.0),
+            createCuboidShape(15.0, 0.0, 1.0, 16.0, 16.0, 15.0)
+        ).simplify()
+        private val NORTH_SHAPE: VoxelShape = VoxelShapes.union(
+            createCuboidShape(0.0, 0.0, 0.0, 1.0, 16.0, 16.0),
+            createCuboidShape(15.0, 0.0, 0.0, 16.0, 16.0, 16.0),
+            createCuboidShape(1.0, 0.0, 15.0, 15.0, 16.0, 16.0)
+        ).simplify()
+        private val SOUTH_SHAPE: VoxelShape = VoxelShapes.union(
+            createCuboidShape(0.0, 0.0, 0.0, 1.0, 16.0, 16.0),
+            createCuboidShape(15.0, 0.0, 0.0, 16.0, 16.0, 16.0),
+            createCuboidShape(1.0, 0.0, 0.0, 15.0, 16.0, 1.0)
+        ).simplify()
+        private val NONE_SHAPE: VoxelShape = VoxelShapes.union(
+            createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 1.0),
+            createCuboidShape(0.0, 0.0, 15.0, 16.0, 16.0, 16.0),
+            createCuboidShape(0.0, 0.0, 1.0, 1.0, 16.0, 15.0),
+            createCuboidShape(15.0, 0.0, 1.0, 16.0, 16.0, 15.0)
+        ).simplify()
+    }
+
     init {
         defaultState = defaultState
             .with(OpenSideProperty, if (verticalType == VerticalBlockType.VERTICAL) OpenSide.NONE else OpenSide.WEST)
@@ -112,8 +133,8 @@ class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: Ve
             val yVelocityDiff = calcVerticalVelocityDiff(entity)
 
             if (verticalType != VerticalBlockType.VERTICAL) {
-                val direction = if(verticalType == VerticalBlockType.VERTICAL_INPUT) {
-                    state.get(OpenSideProperty).toDirection()!!.opposite
+                val direction = if (verticalType == VerticalBlockType.VERTICAL_INPUT) {
+                    state.get(OpenSideProperty).opposite().toDirection()!!
                 } else {
                     state.get(OpenSideProperty).toDirection()!!
                 }
@@ -129,19 +150,20 @@ class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: Ve
         }
     }
 
+
     override fun getOutlineShape(
-        state: BlockState?,
+        state: BlockState,
         world: BlockView?,
         pos: BlockPos?,
         context: ShapeContext?
     ): VoxelShape {
-        // TODO rotate and fix outline shape
-        val bot = createCuboidShape(0.0, 0.0, 0.0, 16.0, 1.0, 16.0)
-        val top = createCuboidShape(0.0, 15.0, 0.0, 16.0, 16.0, 16.0)
-        val left = createCuboidShape(0.0, 1.0, 0.0, 1.0, 16.0, 15.0)
-        val right = createCuboidShape(15.0, 1.0, 0.0, 16.0, 16.0, 15.0)
-
-        return VoxelShapes.union(bot, top, left, right).simplify()
+        return when (state.get(OpenSideProperty)!!) {
+            OpenSide.NONE -> NONE_SHAPE
+            OpenSide.EAST -> EAST_SHAPE
+            OpenSide.NORTH -> NORTH_SHAPE
+            OpenSide.WEST -> WEST_SHAPE
+            OpenSide.SOUTH -> SOUTH_SHAPE
+        }
     }
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
@@ -175,11 +197,9 @@ class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: Ve
         hand: Hand?,
         hit: BlockHitResult?
     ): ActionResult {
-        if(verticalType != VerticalBlockType.VERTICAL) {
+        if (verticalType != VerticalBlockType.VERTICAL) {
             if (player.isSneaking) {
-                val direction = state.get(OpenSideProperty).toDirection()!!
-                val newOpenSide = direction.rotateClockwise(Direction.Axis.Y).toOpenSide()!!
-                world.setBlockState(pos, state.with(OpenSideProperty, newOpenSide))
+                world.setBlockState(pos, state.with(OpenSideProperty, state.get(OpenSideProperty).rotateClockwise()))
                 return ActionResult.SUCCESS
             }
         }

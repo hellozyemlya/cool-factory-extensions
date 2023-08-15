@@ -30,7 +30,7 @@ class ConveyorBeltBlock(settings: Settings) : Block(settings) {
 
     override fun onEntityCollision(state: BlockState?, world: World?, pos: BlockPos?, entity: Entity?) {
         if (entity != null && state != null) {
-            if (!entity.isCrawling) {
+            if (!entity.isSneaking) {
                 val direction: Direction = state.get(Properties.HORIZONTAL_FACING)
                 entity.velocity =
                     entity.velocity.add(0.06 * (direction.offsetX * 1.5), 0.0, 0.06 * (direction.offsetZ * 1.5))
