@@ -178,7 +178,7 @@ class ConveyorBeltVerticalBlock(settings: Settings, private val verticalType: Ve
             if (verticalType != VerticalBlockType.VERTICAL) {
                 for (facing in ctx.placementDirections) {
                     if (facing.axis.isHorizontal) {
-                        return placedState.with(OpenSideProperty, facing.toOpenSide()!!)
+                        return placedState.with(OpenSideProperty, facing.toOpenSide()!!.opposite())
                     }
                 }
             } else {
