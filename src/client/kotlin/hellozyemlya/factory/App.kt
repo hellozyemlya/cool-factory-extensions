@@ -13,6 +13,7 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.unit.dp
@@ -25,8 +26,8 @@ import net.minecraft.item.Item
 import org.jetbrains.skia.Image
 
 @Composable
-fun Icon(image: Image, rotation: Float) {
-    Image(image.toComposeImageBitmap(), "", Modifier.rotate(rotation))
+fun Icon(image: ImageBitmap, rotation: Float) {
+    Image(image, "", Modifier.rotate(rotation))
 }
 @Composable
 fun Inventory(inventory: Inventory) {

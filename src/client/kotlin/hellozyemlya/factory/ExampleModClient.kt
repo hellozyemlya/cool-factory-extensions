@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.systems.VertexSorter
 import hellozyemlya.compose.ClientTickDispatcher
 import hellozyemlya.compose.MinecraftSurfaceManager
+import hellozyemlya.compose.SkiaImageImageBitmap
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
@@ -26,7 +27,7 @@ import org.joml.Matrix4f
 
 
 object ExampleModClient : ClientModInitializer {
-    val itemToIcon = mutableMapOf<Item, Image>()
+    val itemToIcon = mutableMapOf<Item, SkiaImageImageBitmap>()
 
     val mainScene by lazy {
         ComposeScene(ClientTickDispatcher, density = Density(2f)).also { it.setContent { App() } }
@@ -84,7 +85,7 @@ object ExampleModClient : ClientModInitializer {
                 matrixStack.pop()
                 RenderSystem.applyModelViewMatrix()
                 fbo.endWrite()
-                itemToIcon[it] = fbo.toImage()
+                itemToIcon[it] = SkiaImageImageBitmap(fbo.toImage())
             }
             fbo.delete()
             println("image generation finished")
