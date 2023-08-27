@@ -125,5 +125,6 @@ configurations.all {
     resolutionStrategy {
         force("org.jetbrains.skiko:skiko-awt:0.0.0-SNAPSHOT")
         force("org.jetbrains.skiko:skiko-awt-runtime-windows-x64:0.0.0-SNAPSHOT")
+        force("org.jetbrains.skiko:skiko-awt-runtime-macos-arm64:0.0.0-SNAPSHOT")
     }
 }

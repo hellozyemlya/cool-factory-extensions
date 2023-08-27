@@ -63,6 +63,7 @@ object ExampleModClient : ClientModInitializer {
             println("image generation finished")
         }
         HudRenderCallback.EVENT.register { ctx, delta ->
+            ctx.matrices.push()
             MinecraftSkiaDrawUtils.INSTANCE.renderToFbo(iconsAtlasFbo) { ctx ->
                 ctx.matrices.scale(4f, 4f, 1f)
                 Registries.ITEM.forEachIndexed { index, item ->
@@ -75,6 +76,7 @@ object ExampleModClient : ClientModInitializer {
                     ctx.drawItem(item.defaultStack, xR, yR)
                 }
             }
+            ctx.matrices.pop()
             MinecraftSkiaDrawUtils.INSTANCE.render { canvas, surface ->
                 mainScene.constraints = Constraints(maxWidth = surface.width, maxHeight = surface.height)
                 mainScene.render(canvas, System.nanoTime())
