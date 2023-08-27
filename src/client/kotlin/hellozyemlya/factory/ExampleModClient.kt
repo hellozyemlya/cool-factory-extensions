@@ -40,48 +40,44 @@ object ExampleModClient : ClientModInitializer {
 
     val iconsAtlasFbo by lazy {
         val res = ImageFrameBuffer(iconsAtlas)
-        println("image fbo created...")
         res
-    }
-
-    val rawFbo by lazy  {
-        SimpleFramebuffer(4096, 4096, true, MinecraftClient.IS_SYSTEM_MAC)
     }
     override fun onInitializeClient() {
         ClientTickDispatcher.setup()
 
         ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
             println("generating images...")
-            val fbo =
             MinecraftSkiaDrawUtils.INSTANCE.renderToFbo(iconsAtlasFbo) { ctx ->
-                // default item is 16, I want them to be 64 pixels
                 ctx.matrices.scale(4f, 4f, 1f)
                 Registries.ITEM.forEachIndexed { index, item ->
                     val row = index / 64
                     val col = index % 64
-                    val x = (col * 64) / 4
-                    val y = (row * 64)  / 4
-                    ctx.drawItem(item.defaultStack, x, y)
+                    val x = col * 64
+                    val y = row * 64
+                    val xR = x / 4
+                    val yR = y / 4
+                    ctx.drawItem(item.defaultStack, xR, yR)
+                    itemToIcon[item] = SkiaImageImageBitmap(iconsAtlas, IRect.makeXYWH(x, y, 64, 64).toRect())
                 }
             }
-//            val _atlasImage = fbo.toImage()
-            println("Rendered atlas")
-//            Registries.ITEM.forEachIndexed { index, item ->
-//                val row = index / 64
-//                val col = index % 64
-//                val x = (col * 64) / 4
-//                val y = (row * 64)  / 4
-//                val subset = iconsAtlas.makeSubset(IRect.makeXYWH(x, y, 64, 64), MinecraftSkiaDrawUtils.INSTANCE.context)
-////                println("Generated ${index}")
-//                itemToIcon[item] = SkiaImageImageBitmap(subset)
-//            }
             println("image generation finished")
         }
         HudRenderCallback.EVENT.register { ctx, delta ->
+            MinecraftSkiaDrawUtils.INSTANCE.renderToFbo(iconsAtlasFbo) { ctx ->
+                ctx.matrices.scale(4f, 4f, 1f)
+                Registries.ITEM.forEachIndexed { index, item ->
+                    val row = index / 64
+                    val col = index % 64
+                    val x = col * 64
+                    val y = row * 64
+                    val xR = x / 4
+                    val yR = y / 4
+                    ctx.drawItem(item.defaultStack, xR, yR)
+                }
+            }
             MinecraftSkiaDrawUtils.INSTANCE.render { canvas, surface ->
                 mainScene.constraints = Constraints(maxWidth = surface.width, maxHeight = surface.height)
                 mainScene.render(canvas, System.nanoTime())
-                canvas.drawImage(iconsAtlas, 0f, 0f)
             }
         }
     }

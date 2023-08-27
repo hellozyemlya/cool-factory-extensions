@@ -44,11 +44,17 @@ class ImageFrameBuffer(private val image: Image) : Framebuffer(true) {
                 )
             }
             setTexFilter(GlConst.GL_NEAREST)
+            GlStateManager._bindTexture(colorAttachment)
+            GlStateManager._texParameter(GlConst.GL_TEXTURE_2D, GlConst.GL_TEXTURE_WRAP_S, GlConst.GL_CLAMP_TO_EDGE)
+            GlStateManager._texParameter(GlConst.GL_TEXTURE_2D, GlConst.GL_TEXTURE_WRAP_T, GlConst.GL_CLAMP_TO_EDGE)
+            GlStateManager._texImage2D(
+                GlConst.GL_TEXTURE_2D, 0, GlConst.GL_RGBA8,
+                textureWidth, textureHeight, 0, GlConst.GL_RGBA, GlConst.GL_UNSIGNED_BYTE, null as IntBuffer?
+            )
             GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, fbo)
-            println("--- binding texture - ${image.getBackendTexture()!!.glTextureId}")
             GlStateManager._glFramebufferTexture2D(
                 GlConst.GL_FRAMEBUFFER, GlConst.GL_COLOR_ATTACHMENT0, GlConst.GL_TEXTURE_2D,
-                image.getBackendTexture()!!.glTextureId, 0
+                colorAttachment, 0
             )
             if (useDepthAttachment) {
                 GlStateManager._glFramebufferTexture2D(

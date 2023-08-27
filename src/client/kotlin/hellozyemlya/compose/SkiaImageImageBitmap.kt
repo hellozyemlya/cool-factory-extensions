@@ -47,12 +47,12 @@ inline fun unpackFloat2(value: Long): Float {
  * without any intermediate Bitmap instance creation. This opens ability to use texture-backed
  * Image instances, for performance and RTT scenarios.
  */
-class SkiaImageImageBitmap(private val image: Image) : ImageBitmap {
+class SkiaImageImageBitmap(private val image: Image, private val sourceRect: Rect) : ImageBitmap {
     override val colorSpace = image.colorSpace.toComposeColorSpace()
     override val config = image.colorType.toComposeConfig()
     override val hasAlpha = !image.isOpaque
-    override val height get() = image.height
-    override val width get() = image.width
+    override val height get() = sourceRect.height.toInt()
+    override val width get() = sourceRect.width.toInt()
     override fun prepareToDraw() = Unit
     override fun readPixels(
         buffer: IntArray,
@@ -67,21 +67,18 @@ class SkiaImageImageBitmap(private val image: Image) : ImageBitmap {
     }
 
     public fun doDraw(
-        canvas: Canvas, srcOffset: Long,
+        canvas: Canvas,
+        srcOffset: Long,
         srcSize: Long,
         dstOffset: Long,
         dstSize: Long,
         composePaint: Paint,
         skiaPaint: org.jetbrains.skia.Paint
     ) {
+
         canvas.drawImageRect(
             image,
-            Rect.makeXYWH(
-                unpackFloat1(srcOffset),
-                unpackFloat2(srcOffset),
-                unpackFloat1(srcSize),
-                unpackFloat2(srcSize)
-            ),
+            sourceRect,
             Rect.makeXYWH(
                 unpackFloat1(dstOffset),
                 unpackFloat2(dstOffset),

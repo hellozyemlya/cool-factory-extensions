@@ -63,7 +63,7 @@ fun Inventory(inventory: Inventory) {
                 val item = stack.item
                 val image = ExampleModClient.itemToIcon[item]
                 if (image != null) {
-                    Icon(image, rotation.value)
+                    Icon(image, 0f)
                 } else {
                     Text("Item $stack")
                 }
