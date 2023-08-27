@@ -7,10 +7,10 @@ import com.mojang.blaze3d.platform.GlConst
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.systems.VertexSorter
 import hellozyemlya.compose.ClientTickDispatcher
-import hellozyemlya.compose.MinecraftSurfaceManager
+import hellozyemlya.compose.ImageFrameBuffer
+import hellozyemlya.compose.MinecraftSkiaDrawUtils
 import hellozyemlya.compose.SkiaImageImageBitmap
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.MinecraftClient
@@ -22,6 +22,7 @@ import net.minecraft.client.render.DiffuseLighting
 import net.minecraft.client.texture.NativeImage
 import net.minecraft.item.Item
 import net.minecraft.registry.Registries
+import org.jetbrains.skia.IRect
 import org.jetbrains.skia.Image
 import org.joml.Matrix4f
 
@@ -33,67 +34,54 @@ object ExampleModClient : ClientModInitializer {
         ComposeScene(ClientTickDispatcher, density = Density(2f)).also { it.setContent { App() } }
     }
 
+    val iconsAtlas by lazy {
+        MinecraftSkiaDrawUtils.INSTANCE.gpuImage(4096, 4096)
+    }
+
+    val iconsAtlasFbo by lazy {
+        val res = ImageFrameBuffer(iconsAtlas)
+        println("image fbo created...")
+        res
+    }
+
+    val rawFbo by lazy  {
+        SimpleFramebuffer(4096, 4096, true, MinecraftClient.IS_SYSTEM_MAC)
+    }
     override fun onInitializeClient() {
         ClientTickDispatcher.setup()
 
-        ClientLifecycleEvents.CLIENT_STARTED.register {
-
-        }
         ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
             println("generating images...")
-            val textureDim = 64
-            val fbo = SimpleFramebuffer(textureDim, textureDim, true, MinecraftClient.IS_SYSTEM_MAC)
-            fbo.setClearColor(0f, 1f, 0f, 0f)
-
-            Registries.ITEM.forEach {
-                fbo.clear(MinecraftClient.IS_SYSTEM_MAC)
-                RenderSystem.clear(
-                    GlConst.GL_DEPTH_BUFFER_BIT or GlConst.GL_COLOR_BUFFER_BIT,
-                    MinecraftClient.IS_SYSTEM_MAC
-                )
-
-                fbo.beginWrite(true)
-                BackgroundRenderer.clearFog()
-                RenderSystem.enableCull()
-                RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC)
-                val matrix4f = Matrix4f().setOrtho(
-                    0.0f,
-                    textureDim.toFloat(),
-                    textureDim.toFloat(),
-                    0.0f,
-                    1000.0f,
-                    21000.0f
-                )
-                RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_Z)
-                val matrixStack = RenderSystem.getModelViewStack()
-                matrixStack.push()
-                matrixStack.loadIdentity()
-                matrixStack.translate(0.0f, 0.0f, -11000.0f)
-                matrixStack.scale((textureDim / 16).toFloat(), (textureDim / 16).toFloat(), 1f)
-                RenderSystem.applyModelViewMatrix()
-                DiffuseLighting.enableGuiDepthLighting()
-
-                val drawContext = DrawContext(
-                    MinecraftClient.getInstance(),
-                    MinecraftClient.getInstance().bufferBuilders.entityVertexConsumers
-                )
-
-                drawContext.drawItem(it.defaultStack, 0, 0)
-
-                drawContext.draw()
-                RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC)
-                matrixStack.pop()
-                RenderSystem.applyModelViewMatrix()
-                fbo.endWrite()
-                itemToIcon[it] = SkiaImageImageBitmap(fbo.toImage())
+            val fbo =
+            MinecraftSkiaDrawUtils.INSTANCE.renderToFbo(iconsAtlasFbo) { ctx ->
+                // default item is 16, I want them to be 64 pixels
+                ctx.matrices.scale(4f, 4f, 1f)
+                Registries.ITEM.forEachIndexed { index, item ->
+                    val row = index / 64
+                    val col = index % 64
+                    val x = (col * 64) / 4
+                    val y = (row * 64)  / 4
+                    ctx.drawItem(item.defaultStack, x, y)
+                }
             }
-            fbo.delete()
+//            val _atlasImage = fbo.toImage()
+            println("Rendered atlas")
+//            Registries.ITEM.forEachIndexed { index, item ->
+//                val row = index / 64
+//                val col = index % 64
+//                val x = (col * 64) / 4
+//                val y = (row * 64)  / 4
+//                val subset = iconsAtlas.makeSubset(IRect.makeXYWH(x, y, 64, 64), MinecraftSkiaDrawUtils.INSTANCE.context)
+////                println("Generated ${index}")
+//                itemToIcon[item] = SkiaImageImageBitmap(subset)
+//            }
             println("image generation finished")
         }
         HudRenderCallback.EVENT.register { ctx, delta ->
-            MinecraftSurfaceManager.INSTANCE.render { canvas, surface ->
+            MinecraftSkiaDrawUtils.INSTANCE.render { canvas, surface ->
                 mainScene.constraints = Constraints(maxWidth = surface.width, maxHeight = surface.height)
                 mainScene.render(canvas, System.nanoTime())
+                canvas.drawImage(iconsAtlas, 0f, 0f)
             }
         }
     }

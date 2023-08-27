@@ -1,7 +1,6 @@
 package hellozyemlya.compose
 
 import com.mojang.blaze3d.systems.RenderSystem
-import kotlinx.coroutines.runBlocking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.Framebuffer
 import net.minecraft.client.render.BufferRenderer
@@ -9,14 +8,14 @@ import org.jetbrains.skia.*
 import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL33
 
-class MinecraftSurfaceManager : SurfaceManager {
+class MinecraftSkiaDrawUtils : SkiaDrawUtils {
     companion object {
         val INSTANCE by lazy {
-            MinecraftSurfaceManager()
+            MinecraftSkiaDrawUtils()
         }
     }
 
-    private val directSkiaContext by lazy {
+    override val context by lazy {
         DirectContext.makeGL()
     }
     private lateinit var _surface: Surface
@@ -44,7 +43,7 @@ class MinecraftSurfaceManager : SurfaceManager {
             FramebufferFormat.GR_GL_RGBA8
         )
         _surface = Surface.makeFromBackendRenderTarget(
-            directSkiaContext, backendRenderTarget, SurfaceOrigin.BOTTOM_LEFT, SurfaceColorFormat.RGBA_8888,
+            context, backendRenderTarget, SurfaceOrigin.BOTTOM_LEFT, SurfaceColorFormat.RGBA_8888,
             ColorSpace.displayP3,
             SurfaceProps(PixelGeometry.RGB_H)
         )!!
@@ -67,14 +66,17 @@ class MinecraftSurfaceManager : SurfaceManager {
         afterRender()
     }
 
+    override fun gpuImage(width: Int, height: Int): Image {
+        return Image.makeFromAdoptedTexture(context, SurfaceOrigin.BOTTOM_LEFT, ImageInfo(width, height, ColorType.RGBA_8888, ColorAlphaType.PREMUL))
+    }
+
     private fun beforeRender() {
         RenderSystem.assertOnRenderThread()
-
         RenderSystem.pixelStore(GL30.GL_UNPACK_ROW_LENGTH, 0)
         RenderSystem.pixelStore(GL30.GL_UNPACK_SKIP_PIXELS, 0)
         RenderSystem.pixelStore(GL30.GL_UNPACK_SKIP_ROWS, 0)
         RenderSystem.pixelStore(GL30.GL_UNPACK_ALIGNMENT, 4)
-        directSkiaContext.resetAll()
+        context.resetAll()
     }
 
     private fun afterRender() {
@@ -99,5 +101,7 @@ class MinecraftSurfaceManager : SurfaceManager {
         GL30.glDisable(GL30.GL_DEPTH_TEST)
         GL30.glActiveTexture(GL30.GL_TEXTURE0)
         RenderSystem.activeTexture(GL30.GL_TEXTURE0)
+        RenderSystem.enableCull()
+        GL30.glEnable(GL30.GL_CULL_FACE)
     }
 }
