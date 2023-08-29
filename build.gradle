@@ -65,9 +65,10 @@ dependencies {
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
     // Uncomment the following line to enable the deprecated Fabric API modules.
     // These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
-    implementation compose.desktop.currentOs
+//    implementation compose.desktop.currentOs'
+    implementation "org.jetbrains.compose.runtime:runtime-desktop:1.4.3"
     implementation "com.facebook.yoga:yoga-jvm:0.0.0-SNAPSHOT"
-    println(compose.desktop.currentOs)
+//    println(compose.desktop.currentOs)
     // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
