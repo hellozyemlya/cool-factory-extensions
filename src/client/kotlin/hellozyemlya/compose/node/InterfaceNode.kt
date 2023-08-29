@@ -32,6 +32,7 @@ val EmptyRenderer = Renderer { }
 interface InterfaceNode {
     var renderer: Renderer
     var measureFunction: MeasureFunction?
+    var flex: Flex
     val layoutNode: YogaNode
 
     companion object {
@@ -49,7 +50,14 @@ class Node : InterfaceNode {
                 layoutNode.setMeasureFunction(null)
             } else {
                 layoutNode.setMeasureFunction(::measure)
+                layoutNode.dirty()
             }
+        }
+    override var flex: Flex = Flex
+        get() = field
+        set(value) {
+            field = value
+            field.apply(layoutNode)
         }
 
     val children = mutableListOf<Node>()
@@ -122,6 +130,7 @@ class NodeApplier(root: Node) : AbstractApplier<Node>(root) {
 @Composable
 inline fun Node(
     renderer: Renderer = EmptyRenderer,
+    flex: Flex = Flex,
     measureFunction: MeasureFunction? = null,
     content: @Composable () -> Unit = {}
 ) {
@@ -130,6 +139,7 @@ inline fun Node(
         update = {
             set(renderer) { this.renderer = it }
             set(measureFunction) { this.measureFunction = it }
+            set(flex) { this.flex = it }
         },
         content = content
     )
@@ -169,9 +179,7 @@ class GuiScene : CoroutineScope {
         running = true
 
         launch {
-            println("recomposer started")
             recomposer.runRecomposeAndApplyChanges()
-            println("recomposer dead")
         }
 
         launch {
@@ -187,7 +195,6 @@ class GuiScene : CoroutineScope {
             snapshotHandle.dispose()
             composition.dispose()
             composeScope.cancel()
-            println("recomposer dead 123-100400")
         }
     }
 
@@ -201,7 +208,6 @@ class GuiScene : CoroutineScope {
     fun render(drawContext: DrawContext) {
         clock.sendFrame(System.nanoTime())
         val window = MinecraftClient.getInstance().window
-        (rootNode.layoutNode as YogaNodeJNIBase).dirtyAllDescendants()
         rootNode.layoutNode.calculateLayout(window.scaledWidth.toFloat(), window.scaledHeight.toFloat())
         rootNode.render(drawContext)
     }

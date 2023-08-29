@@ -2,14 +2,19 @@ package hellozyemlya.compose.node.components
 
 import androidx.compose.runtime.Composable
 import com.facebook.yoga.YogaMeasureMode
-import hellozyemlya.compose.node.InterfaceNode
-import hellozyemlya.compose.node.Node
+import hellozyemlya.compose.node.*
 import net.minecraft.client.MinecraftClient
+import net.minecraft.util.math.ColorHelper
 
 @Composable
-fun Text(text: String) {
+fun McText(text: String) {
     Node(
         renderer = {
+            this.drawBorder(it.layoutNode.layoutX.toInt(),
+                it.layoutNode.layoutY.toInt(),
+                it.layoutNode.layoutWidth.toInt(),
+                it.layoutNode.layoutHeight.toInt(),
+                ColorHelper.Argb.getArgb(255, 255, 0, 0))
             this.drawText(MinecraftClient.getInstance().textRenderer, text, it.layoutNode.layoutX.toInt(), it.layoutNode.layoutY.toInt(), 0x00FF00, false)
         },
         measureFunction = {
