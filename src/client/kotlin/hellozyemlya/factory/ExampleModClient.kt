@@ -38,8 +38,12 @@ fun MyHud() {
             }
         }
         McText(text)
+        if(counter  % 2 == 0) {
+            McText("Counter is multiple of 2")
+        }
         McItem(Items.ACACIA_BOAT.defaultStack, 128)
         McText("Hello World 123")
+
     }
 }
 

@@ -96,9 +96,8 @@ class NodeApplier(root: Node) : AbstractApplier<Node>(root) {
         check(instance.parent == null) {
             "$instance must not have a parent when being inserted."
         }
-        current.children.add(index, instance)
         instance.parent = current
-        println("addChildAt ${index}")
+        current.children.add(index, instance)
         current.layoutNode.addChildAt(instance.layoutNode, index)
     }
 
@@ -108,16 +107,17 @@ class NodeApplier(root: Node) : AbstractApplier<Node>(root) {
 
     override fun move(from: Int, to: Int, count: Int) {
         current.children.move(from, to, count)
+        current.layoutNode.toMutableList().move(from, to, count)
     }
 
     override fun onClear() {
         current.children.clear()
+        current.layoutNode.toMutableList().clear()
     }
 
     override fun remove(index: Int, count: Int) {
         current.children.remove(index, count)
-        // TODO support layout node range removal
-        current.layoutNode.removeChildAt(index)
+        current.layoutNode.toMutableList().remove(index, count)
     }
 
 }
