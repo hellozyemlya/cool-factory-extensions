@@ -3,6 +3,8 @@ package hellozyemlya.compose.node.components
 import androidx.compose.runtime.Composable
 import com.facebook.yoga.YogaMeasureMode
 import hellozyemlya.compose.node.*
+import hellozyemlya.compose.rendering.debugBorder
+import hellozyemlya.compose.rendering.drawText
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.math.ColorHelper
 
@@ -10,12 +12,9 @@ import net.minecraft.util.math.ColorHelper
 fun McText(text: String) {
     Node(
         renderer = {
-            this.drawBorder(it.layoutNode.layoutX.toInt(),
-                it.layoutNode.layoutY.toInt(),
-                it.layoutNode.layoutWidth.toInt(),
-                it.layoutNode.layoutHeight.toInt(),
-                ColorHelper.Argb.getArgb(255, 255, 0, 0))
-            this.drawText(MinecraftClient.getInstance().textRenderer, text, it.layoutNode.layoutX.toInt(), it.layoutNode.layoutY.toInt(), 0x00FF00, false)
+            debugBorder(it) {
+                this.drawText(text, it.layoutNode.layoutX, it.layoutNode.layoutY, 0x00FF00, false)
+            }
         },
         measureFunction = {
                 node: InterfaceNode, width: Float,

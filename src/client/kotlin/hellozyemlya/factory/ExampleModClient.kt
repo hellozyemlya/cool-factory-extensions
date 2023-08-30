@@ -37,9 +37,9 @@ fun MyHud() {
                 McItem(it.defaultStack, 32)
             }
         }
-//        McText(text)
-//        McItem(Items.ACACIA_BOAT.defaultStack, 32)
-//        McText("Hello World 123")
+        McText(text)
+        McItem(Items.ACACIA_BOAT.defaultStack, 128)
+        McText("Hello World 123")
     }
 }
 

@@ -43,7 +43,6 @@ interface InterfaceNode {
 class Node : InterfaceNode {
     override var renderer = EmptyRenderer
     override var measureFunction: MeasureFunction? = null
-        get() = field
         set(value) {
             field = value
             if(field == null) {
@@ -65,10 +64,6 @@ class Node : InterfaceNode {
 
     override val layoutNode: YogaNode = YogaNodeFactory.create().apply {
         this.data = this@Node
-        flexDirection = YogaFlexDirection.ROW
-        alignItems = YogaAlign.STRETCH
-        justifyContent = YogaJustify.CENTER
-        alignContent = YogaAlign.STRETCH
     }
 
     fun render(context: DrawContext) {
