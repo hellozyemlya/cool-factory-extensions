@@ -124,8 +124,8 @@ class NodeApplier(root: Node) : AbstractApplier<Node>(root) {
 
 @Composable
 inline fun Node(
-    renderer: Renderer = EmptyRenderer,
     flex: Flex = Flex,
+    renderer: Renderer = EmptyRenderer,
     measureFunction: MeasureFunction? = null,
     content: @Composable () -> Unit = {}
 ) {
